@@ -62,10 +62,10 @@ def list_tasks(db):
     
     for task in all_tasks:
         # 计算运行时间
-        if task.status == TaskStatus.RUNNING and task.started_at:
-            duration = format_duration(task.started_at)
-        elif task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED] and task.started_at and task.completed_at:
-            duration = format_duration(task.started_at, task.completed_at)
+        if task.status == TaskStatus.RUNNING and task.start_time:
+            duration = format_duration(task.start_time)
+        elif task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED] and task.start_time and task.completed_at:
+            duration = format_duration(task.start_time, task.completed_at)
         else:
             duration = "-"
         

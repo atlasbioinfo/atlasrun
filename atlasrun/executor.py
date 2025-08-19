@@ -23,7 +23,6 @@ class TaskExecutor:
         log_dir = self.atlasrun_dir / "logs"
         log_dir.mkdir(exist_ok=True)
         
-        # 使用模板创建脚本内容
         script_content = create_task_script(
             task_id=task_id,
             command=command,
@@ -204,30 +203,43 @@ class TaskExecutor:
         task_id = self.db.add_task(command, working_dir)
         print(f"Task {task_id} added to queue: {command}")
         
+        # 获取队列中所有任务（包括pending和running），按提交时间排序
+        all_tasks = self.db.get_all_tasks(limit=1000)  # 获取足够多的任务
+        
+        # 找到当前任务之前最新提交的任务
+        current_task = None
+        previous_task = None
+        
+        for task in all_tasks:
+            if task.id == task_id:
+                current_task = task
+                break
+            previous_task = task
+        
         # 确定需要等待的PID和任务状态
         wait_for_pid = None
-        should_start_immediately = len(running_tasks) == 0
+        should_start_immediately = previous_task is None
         
-        if running_tasks:
-            # 获取最后一个运行中的任务（最新的）
-            last_running_task = max(running_tasks, key=lambda x: x.started_at or 0)
-            wait_for_pid = last_running_task.pid
-            print(f"Task {task_id} will wait for task {last_running_task.id} (PID: {wait_for_pid}) to complete")
-            # 状态保持为 pending，等待前一个任务完成
+        if previous_task:
+            # 等待前一个任务完成（不管它是什么状态）
+            wait_for_pid = previous_task.pid
+            print(f"Task {task_id} will wait for task {previous_task.id} (PID: {wait_for_pid}, status: {previous_task.status.value}) to complete")
         else:
-            print(f"No running tasks, starting task {task_id} immediately")
-            # 立即启动，状态会变为 running
+            print(f"No previous tasks, starting task {task_id} immediately")
+        
+        print(f"DEBUG: wait_for_pid = {wait_for_pid}")
         
         # 启动任务
         print(f"Starting task {task_id}...")
         self.execute_task(Task(
             id=task_id,
             command=command,
-            working_dir=working_dir,
+            working_dir=working_dir, 
             status=TaskStatus.PENDING,
             pid=None,
             created_at=time.time(),
             started_at=None,
+            start_time=None,
             completed_at=None,
             exit_code=None
         ), wait_for_pid)

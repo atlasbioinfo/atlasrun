@@ -26,12 +26,12 @@ def main():
                        help='Clean up completed tasks older than specified days')
     parser.add_argument('-u', '--update', action='store_true',
                        help='Update task statuses (check if PIDs are still running)')
-    parser.add_argument('--mark-running', type=int, metavar='TASK_ID',
-                       help='Mark a specific task as running (internal use)')
-    parser.add_argument('--mark-pending', type=int, metavar='TASK_ID',
-                       help='Force mark a task with specific ID as pending')
-    parser.add_argument('--mark-complete', nargs=2, metavar=('TASK_ID', 'EXIT_CODE'),
-                       help='Force mark a task with specific ID as completed with exit code')
+    parser.add_argument('--mark-running', type=int, metavar='PID',
+                       help='Mark a task with specific PID as running (internal use)')
+    parser.add_argument('--mark-pending', type=int, metavar='PID',
+                       help='Force mark a task with specific PID as pending')
+    parser.add_argument('--mark-complete', type=int, metavar='PID',
+                       help='Force mark a task with specific PID as completed')
     parser.add_argument('-d', '--dir', metavar='DIRECTORY',
                        help='Working directory for the command')
     parser.add_argument('-h', '--help', action='store_true',
@@ -77,16 +77,15 @@ def main():
         return
     
     if args.mark_running:
-        mark_task_running(db, args.mark_running)
+        db.mark_task_running_by_pid(args.mark_running)
         return
     
     if args.mark_pending:
-        mark_task_pending(db, args.mark_pending)
+        db.mark_task_pending_by_pid(args.mark_pending)
         return
     
     if args.mark_complete:
-        task_id, exit_code = args.mark_complete
-        mark_task_complete(db, int(task_id), int(exit_code))
+        db.mark_task_complete_by_pid(args.mark_complete)
         return
     
     # 获取命令参数（所有没有-开头的参数）
@@ -127,57 +126,15 @@ def main():
 
 
 def cleanup_tasks(db, days):
-    """清理旧任务"""
+    """清理任务"""
     db.cleanup_completed_tasks(days)
-    print(f"Cleaned up completed tasks older than {days} days")
+    print(f"Cleaned up tasks older than {days} days")
 
 
 def update_task_statuses(db):
     """更新任务状态"""
     executor = TaskExecutor(db)
     executor.update_task_statuses()
-
-
-def mark_task_running(db, task_id):
-    """标记任务为运行状态（脚本开始时调用）"""
-    task = db.get_task_by_id(task_id)
-    if not task:
-        print(f"Task {task_id} not found")
-        return
-    
-    if task.status != TaskStatus.PENDING:
-        print(f"Task {task_id} is not in pending status")
-        return
-    
-    # 获取当前进程的PID
-    import os
-    current_pid = os.getpid()
-    
-    # 更新任务状态为running
-    db.start_task(task_id, current_pid)
-    print(f"Task {task_id} marked as running with PID {current_pid}")
-
-
-def mark_task_pending(db, task_id):
-    """强制标记任务为pending状态"""
-    task = db.get_task_by_id(task_id)
-    if not task:
-        print(f"Task {task_id} not found")
-        return
-    
-    db.mark_task_pending(task_id)
-    print(f"Task {task_id} marked as pending")
-
-
-def mark_task_complete(db, task_id, exit_code):
-    """强制标记任务为completed状态"""
-    task = db.get_task_by_id(task_id)
-    if not task:
-        print(f"Task {task_id} not found")
-        return
-    
-    db.mark_task_complete(task_id, exit_code)
-    print(f"Task {task_id} marked as completed with exit code {exit_code}")
 
 
 if __name__ == '__main__':

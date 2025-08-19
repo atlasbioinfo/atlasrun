@@ -9,10 +9,8 @@ from .queries import (
     get_completed_tasks, get_all_tasks, get_task_by_id, get_task_by_pid
 )
 from .updates import (
-    add_task, start_task, complete_task, fail_task, update_pid,
-    mark_task_pending, mark_task_complete,
-    mark_task_pending_by_pid, mark_task_complete_by_pid,
-    cleanup_completed_tasks
+    add_task, update_pid, fail_task, mark_task_pending_by_pid, 
+    mark_task_complete_by_pid, mark_task_running_by_pid, cleanup_completed_tasks
 )
 
 
@@ -53,29 +51,20 @@ class Database:
     def add_task(self, command: str, working_dir: str) -> int:
         return add_task(self.db_path, command, working_dir)
     
-    def start_task(self, task_id: int, pid: int):
-        start_task(self.db_path, task_id, pid)
-    
-    def complete_task(self, task_id: int, exit_code: int):
-        complete_task(self.db_path, task_id, exit_code)
-    
-    def fail_task(self, task_id: int, exit_code: int):
-        fail_task(self.db_path, task_id, exit_code)
-    
     def update_pid(self, task_id: int, pid: int):
         update_pid(self.db_path, task_id, pid)
     
-    def mark_task_pending(self, task_id: int):
-        mark_task_pending(self.db_path, task_id)
-    
-    def mark_task_complete(self, task_id: int, exit_code: int = 0):
-        mark_task_complete(self.db_path, task_id, exit_code)
+    def fail_task(self, task_id: int, exit_code: int):
+        fail_task(self.db_path, task_id, exit_code)
     
     def mark_task_pending_by_pid(self, pid: int):
         mark_task_pending_by_pid(self.db_path, pid)
     
     def mark_task_complete_by_pid(self, pid: int, exit_code: int = 0):
         mark_task_complete_by_pid(self.db_path, pid, exit_code)
+    
+    def mark_task_running_by_pid(self, pid: int):
+        mark_task_running_by_pid(self.db_path, pid)
     
     def cleanup_completed_tasks(self, days: int = 7):
         cleanup_completed_tasks(self.db_path, days)

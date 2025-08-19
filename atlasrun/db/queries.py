@@ -44,7 +44,7 @@ def get_running_tasks(db_path: str) -> List[Task]:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, command, working_dir, status, pid, created_at, 
-                   started_at, completed_at, exit_code
+                   started_at, start_time, completed_at, exit_code
             FROM tasks 
             WHERE status = ?
         """, (TaskStatus.RUNNING.value,))
@@ -59,8 +59,9 @@ def get_running_tasks(db_path: str) -> List[Task]:
                 pid=row[4],
                 created_at=row[5],
                 started_at=row[6],
-                completed_at=row[7],
-                exit_code=row[8]
+                start_time=row[7],
+                completed_at=row[8],
+                exit_code=row[9]
             )
             tasks.append(task)
         return tasks
@@ -72,7 +73,7 @@ def get_all_running_tasks(db_path: str) -> List[Task]:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, command, working_dir, status, pid, created_at, 
-                   started_at, completed_at, exit_code
+                   started_at, start_time, completed_at, exit_code
             FROM tasks 
             WHERE status = ?
             ORDER BY started_at ASC
@@ -88,8 +89,9 @@ def get_all_running_tasks(db_path: str) -> List[Task]:
                 pid=row[4],
                 created_at=row[5],
                 started_at=row[6],
-                completed_at=row[7],
-                exit_code=row[8]
+                start_time=row[7],
+                completed_at=row[8],
+                exit_code=row[9]
             )
             tasks.append(task)
         return tasks
@@ -101,7 +103,7 @@ def get_completed_tasks(db_path: str) -> List[Task]:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, command, working_dir, status, pid, created_at, 
-                   started_at, completed_at, exit_code
+                   started_at, start_time, completed_at, exit_code
             FROM tasks 
             WHERE status IN (?, ?)
             ORDER BY created_at DESC
@@ -117,8 +119,9 @@ def get_completed_tasks(db_path: str) -> List[Task]:
                 pid=row[4],
                 created_at=row[5],
                 started_at=row[6],
-                completed_at=row[7],
-                exit_code=row[8]
+                start_time=row[7],
+                completed_at=row[8],
+                exit_code=row[9]
             )
             tasks.append(task)
         return tasks
@@ -130,7 +133,7 @@ def get_all_tasks(db_path: str, limit: int = 100) -> List[Task]:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, command, working_dir, status, pid, created_at, 
-                   started_at, completed_at, exit_code
+                   started_at, start_time, completed_at, exit_code
             FROM tasks 
             ORDER BY created_at DESC
             LIMIT ?
@@ -146,8 +149,9 @@ def get_all_tasks(db_path: str, limit: int = 100) -> List[Task]:
                 pid=row[4],
                 created_at=row[5],
                 started_at=row[6],
-                completed_at=row[7],
-                exit_code=row[8]
+                start_time=row[7],
+                completed_at=row[8],
+                exit_code=row[9]
             )
             tasks.append(task)
         return tasks
@@ -159,7 +163,7 @@ def get_task_by_id(db_path: str, task_id: int) -> Optional[Task]:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, command, working_dir, status, pid, created_at, 
-                   started_at, completed_at, exit_code
+                   started_at, start_time, completed_at, exit_code
             FROM tasks 
             WHERE id = ?
         """, (task_id,))
@@ -174,8 +178,9 @@ def get_task_by_id(db_path: str, task_id: int) -> Optional[Task]:
                 pid=row[4],
                 created_at=row[5],
                 started_at=row[6],
-                completed_at=row[7],
-                exit_code=row[8]
+                start_time=row[7],
+                completed_at=row[8],
+                exit_code=row[9]
             )
         return None
 
@@ -186,7 +191,7 @@ def get_task_by_pid(db_path: str, pid: int) -> Optional[Task]:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, command, working_dir, status, pid, created_at, 
-                   started_at, completed_at, exit_code
+                   started_at, start_time, completed_at, exit_code
             FROM tasks 
             WHERE pid = ?
         """, (pid,))
@@ -201,7 +206,8 @@ def get_task_by_pid(db_path: str, pid: int) -> Optional[Task]:
                 pid=row[4],
                 created_at=row[5],
                 started_at=row[6],
-                completed_at=row[7],
-                exit_code=row[8]
+                start_time=row[7],
+                completed_at=row[8],
+                exit_code=row[9]
             )
         return None
