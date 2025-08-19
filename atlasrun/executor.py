@@ -237,7 +237,7 @@ class TaskExecutor:
             working_dir=working_dir, 
             status=TaskStatus.PENDING,
             pid=None,
-            created_at=time.time(),
+            created_at=time.time() * 1000,
             started_at=None,
             start_time=None,
             completed_at=None,
