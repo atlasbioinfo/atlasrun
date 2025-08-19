@@ -13,10 +13,15 @@ def format_duration(start_time, end_time=None):
     if not start_time:
         return "-"
     
-    if not end_time:
-        end_time = time.time()
+    # 转换为秒级时间戳
+    start_sec = start_time / 1000 if start_time > 1000000000000 else start_time
     
-    duration = end_time - start_time
+    if not end_time:
+        end_sec = time.time()
+    else:
+        end_sec = end_time / 1000 if end_time > 1000000000000 else end_time
+    
+    duration = end_sec - start_sec
     if duration < 60:
         return f"{int(duration)}s"
     elif duration < 3600:
@@ -33,7 +38,9 @@ def format_time(timestamp):
     """格式化时间戳"""
     if not timestamp:
         return "-"
-    return datetime.fromtimestamp(timestamp).strftime("%H:%M:%S")
+    # 转换为秒级时间戳
+    timestamp_sec = timestamp / 1000 if timestamp > 1000000000000 else timestamp
+    return datetime.fromtimestamp(timestamp_sec).strftime("%H:%M:%S")
 
 
 def get_status_icon(status):
